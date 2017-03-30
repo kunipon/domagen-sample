@@ -1,0 +1,69 @@
+buildscript {
+	ext {
+		springBootVersion = '1.5.2.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'org.springframework.boot'
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+configurations {
+	domaGenRuntime
+}
+
+// JavaクラスとSQLファイルの出力先ディレクトリを同じにする
+processResources.destinationDir = compileJava.destinationDir
+// コンパイルより前にSQLファイルを出力先ディレクトリにコピーするために依存関係を逆転する
+compileJava.dependsOn processResources
+
+dependencies {
+	def domaGenVersion = "2.12.0"
+	
+	compile('org.springframework.boot:spring-boot-starter-web')
+	compile('org.seasar.doma.boot:doma-spring-boot-starter:1.1.0')
+	compile('org.yaml:snakeyaml')
+	runtime('org.springframework.boot:spring-boot-devtools')
+	runtime('org.postgresql:postgresql')
+	compileOnly('org.projectlombok:lombok')
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	
+	domaGenRuntime('org.postgresql:postgresql')
+	domaGenRuntime("org.seasar.doma:doma-gen:${domaGenVersion}")
+}
+
+bootRepackage {
+	mainClass = 'com.example.Doma2SampleApplication'
+	executable = true
+}
+
+apply from:'datasource.gradle'
+
+task domaGen {
+	def destBaseDir = 'src/main/java/com/example/domain'
+	def basePackage = 'com.example.domain'
+	def resourceDir = 'src/main/resources'
+	
+	ant.taskdef(resource: 'domagentask.properties',
+		classpath: configurations.domaGenRuntime.asPath)
+	ant.gen(url: "${datasource.url}", user: "${datasource.user}", password: "${datasource.password}", templatePrimaryDir: "${resourceDir}/config/doma/templates", tableNamePattern: 'sns_account') {
+		entityConfig(packageName: "${basePackage}.entity", useAccessor: false, useListener: false)
+		daoConfig(packageName: "${basePackage}.dao", overwrite: true)
+		sqlConfig()
+	}
+}
+
+apply from:'eclipse.gradle'

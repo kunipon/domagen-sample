@@ -1,0 +1,19 @@
+import org.yaml.snakeyaml.*
+
+buildscript {
+	repositories {
+		mavenCentral()
+	}
+	dependencies {
+		classpath("org.yaml:snakeyaml:1.17")
+	}
+}
+
+task datasource {
+	Yaml parser = new Yaml()
+	String resDir = sourceSets.main.resources.srcDirs[0]
+	def yamlObj = parser.load(file("${resDir}/application.yml").text)
+	ext.url = yamlObj.spring.datasource.url
+	ext.user = yamlObj.spring.datasource.username
+	ext.password = yamlObj.spring.datasource.password
+}
