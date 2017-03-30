@@ -1,0 +1,24 @@
+.gradle
+/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+*.class
+*.jar
+*.war
+*.ear
+.metadata
+/bin/
+tmp/
+*.tmp
+*.bak
+.settings/
+hs_err_pid*
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+gradle-app.setting
