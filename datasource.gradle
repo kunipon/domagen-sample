@@ -11,8 +11,11 @@ buildscript {
 
 task datasource {
 	Yaml parser = new Yaml()
-	String resDir = sourceSets.main.resources.srcDirs[0]
-	def yamlObj = parser.load(file("${resDir}/application.yml").text)
+	ant.loadfile (
+		srcfile: 'src/main/resources/application.yml',
+		property: 'ds'
+	)
+	def yamlObj = parser.load("${ant.properties.ds}")
 	ext.url = yamlObj.spring.datasource.url
 	ext.user = yamlObj.spring.datasource.username
 	ext.password = yamlObj.spring.datasource.password
